@@ -50,6 +50,8 @@ export interface CostSummary {
   total_calls: number;
   total_duration: number;
   avg_cost_per_call: number;
+  avg_duration: number;
+  avg_duration_per_call: number;
   twilio_cost: number;
   livekit_cost: number;
   llm_cost: number;

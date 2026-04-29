@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { agentsApi, callsApi, costsApi } from '@/lib/api';
-import { Phone, Users, DollarSign, Activity, Settings, FileText, CircleHelp } from 'lucide-react';
+import { Phone, Users, DollarSign, Activity, Settings, FileText, HelpCircle } from 'lucide-react';
 
 export default function Dashboard() {
   // Fetch data
@@ -83,7 +83,7 @@ export default function Dashboard() {
             Docs
           </a>
           <a className="flex items-center gap-3 px-4 py-2 text-white/40 hover:text-white/80 transition-all text-xs" href="#">
-            <CircleHelp className="h-4 w-4" />
+            <HelpCircle className="h-4 w-4" />
             Support
           </a>
         </div>

@@ -6,11 +6,19 @@ settings = get_settings()
 
 
 def get_database_url() -> str:
-    """Get database URL with Supabase connection pooling for better performance"""
+    """Get database URL with async driver for SQLAlchemy async support"""
     if settings.SUPABASE_DB_HOST:
         # Use Supabase direct connection with pooling
         return f"postgresql+asyncpg://{settings.SUPABASE_DB_USER}:{settings.SUPABASE_DB_PASSWORD}@{settings.SUPABASE_DB_HOST}:{settings.SUPABASE_DB_PORT}/{settings.SUPABASE_DB_NAME}"
-    return settings.DATABASE_URL
+    
+    # Ensure DATABASE_URL uses asyncpg driver
+    db_url = settings.DATABASE_URL
+    if db_url.startswith("postgresql://"):
+        db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    elif not db_url.startswith("postgresql+asyncpg://"):
+        # Already has asyncpg prefix or other format
+        pass
+    return db_url
 
 
 engine = create_async_engine(

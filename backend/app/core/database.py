@@ -35,12 +35,20 @@ def get_engine():
         db_url = get_database_url()
         if db_url is None:
             return None
+        
+        # Configure SSL for cloud databases
+        connect_args = {}
+        if "sslmode=require" in db_url:
+            db_url = db_url.replace("?sslmode=require", "")
+            connect_args["ssl"] = True
+        
         _engine = create_async_engine(
             db_url,
             echo=settings.DEBUG,
             pool_size=5,
             max_overflow=10,
-            pool_pre_ping=True
+            pool_pre_ping=True,
+            connect_args=connect_args if connect_args else None
         )
     return _engine
 

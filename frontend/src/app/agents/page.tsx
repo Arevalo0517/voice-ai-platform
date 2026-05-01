@@ -36,12 +36,14 @@ export default function AgentsPage() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const phoneNumber = formData.get('phone_number') as string;
     createMutation.mutate({
       name: formData.get('name') as string,
       description: formData.get('description') as string,
       system_prompt: formData.get('system_prompt') as string,
       voice: formData.get('voice') as string || 'alloy',
       llm_model: formData.get('llm_model') as string || 'gpt-4-turbo',
+      phone_number: phoneNumber || undefined,
     });
   };
 
@@ -185,6 +187,10 @@ export default function AgentsPage() {
               <div>
                 <label className="block text-xs text-white/60 mb-2">Name</label>
                 <input name="name" required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow" />
+              </div>
+              <div>
+                <label className="block text-xs text-white/60 mb-2">Phone Number (E.164 format, e.g., +50712345678)</label>
+                <input name="phone_number" placeholder="+50712345678" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow" />
               </div>
               <div>
                 <label className="block text-xs text-white/60 mb-2">Description</label>

@@ -53,7 +53,7 @@ app.include_router(calls.router, prefix="/api")
 app.include_router(transcripts.router, prefix="/api")
 app.include_router(costs.router, prefix="/api")
 app.include_router(tools.router, prefix="/api")
-app.include_router(webhooks.router)
+app.include_router(webhooks.router, prefix="/api")
 
 
 @app.get("/")

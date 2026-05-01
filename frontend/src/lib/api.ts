@@ -74,44 +74,44 @@ export interface Tool {
 
 // Agents API
 export const agentsApi = {
-  list: () => api.get<Agent[]>('/api/agents'),
-  get: (id: string) => api.get<Agent>(`/api/agents/${id}`),
-  create: (data: Partial<Agent>) => api.post<Agent>('/api/agents', data),
-  update: (id: string, data: Partial<Agent>) => api.put<Agent>(`/api/agents/${id}`, data),
-  delete: (id: string) => api.delete(`/api/agents/${id}`),
+  list: () => api.get<Agent[]>('/api/agents/'),
+  get: (id: string) => api.get<Agent>(`/api/agents/${id}/`),
+  create: (data: Partial<Agent>) => api.post<Agent>('/api/agents/', data),
+  update: (id: string, data: Partial<Agent>) => api.put<Agent>(`/api/agents/${id}/`, data),
+  delete: (id: string) => api.delete(`/api/agents/${id}/`),
   assignPhone: (id: string, phoneNumber: string) => 
-    api.post<Agent>(`/api/agents/${id}/phone`, null, { params: { phone_number: phoneNumber } }),
+    api.post<Agent>(`/api/agents/${id}/phone/`, null, { params: { phone_number: phoneNumber } }),
 };
 
 // Calls API
 export const callsApi = {
   list: (params?: { page?: number; page_size?: number; agent_id?: string }) => 
-    api.get<{ items: Call[]; total: number; page: number; page_size: number; pages: number }>('/api/calls', { params }),
-  get: (id: string) => api.get<Call>(`/api/calls/${id}`),
-  getWithTranscript: (id: string) => api.get(`/api/calls/${id}/full`),
+    api.get<{ items: Call[]; total: number; page: number; page_size: number; pages: number }>('/api/calls/', { params }),
+  get: (id: string) => api.get<Call>(`/api/calls/${id}/`),
+  getWithTranscript: (id: string) => api.get(`/api/calls/${id}/full/`),
 };
 
 // Transcripts API
 export const transcriptsApi = {
-  getByCall: (callId: string) => api.get<Transcript>(`/api/transcripts/call/${callId}`),
-  get: (id: string) => api.get<Transcript>(`/api/transcripts/${id}`),
+  getByCall: (callId: string) => api.get<Transcript>(`/api/transcripts/call/${callId}/`),
+  get: (id: string) => api.get<Transcript>(`/api/transcripts/${id}/`),
 };
 
 // Costs API
 export const costsApi = {
   getSummary: (params?: { agent_id?: string; start_date?: string; end_date?: string }) =>
-    api.get<CostSummary>('/api/costs/summary', { params }),
-  getByAgent: () => api.get('/api/costs/by-agent'),
-  getByPeriod: (period: string) => api.get('/api/costs/by-period', { params: { period } }),
+    api.get<CostSummary>('/api/costs/summary/', { params }),
+  getByAgent: () => api.get('/api/costs/by-agent/'),
+  getByPeriod: (period: string) => api.get('/api/costs/by-period/', { params: { period } }),
 };
 
 // Tools API
 export const toolsApi = {
-  list: () => api.get<Tool[]>('/api/tools'),
-  get: (id: string) => api.get<Tool>(`/api/tools/${id}`),
-  create: (data: Partial<Tool>) => api.post<Tool>('/api/tools', data),
-  update: (id: string, data: Partial<Tool>) => api.put<Tool>(`/api/tools/${id}`, data),
-  delete: (id: string) => api.delete(`/api/tools/${id}`),
+  list: () => api.get<Tool[]>('/api/tools/'),
+  get: (id: string) => api.get<Tool>(`/api/tools/${id}/`),
+  create: (data: Partial<Tool>) => api.post<Tool>('/api/tools/', data),
+  update: (id: string, data: Partial<Tool>) => api.put<Tool>(`/api/tools/${id}/`, data),
+  delete: (id: string) => api.delete(`/api/tools/${id}/`),
 };
 
 export default api;

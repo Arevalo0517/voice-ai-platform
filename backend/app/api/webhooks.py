@@ -50,7 +50,10 @@ async def twilio_inbound_call(
         response = VoiceResponse()
         response.say("Thank you for calling. No agent is available at this time.")
         response.hangup()
+        print(f"[WEBHOOK] No agent found for number: {to_number} (normalized: {to_number_normalized})")
         return Response(content=str(response), media_type="application/xml")
+    
+    print(f"[WEBHOOK] Found agent: {agent.name} (ID: {agent.id})")
     
     # Create call record
     from datetime import datetime

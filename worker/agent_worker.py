@@ -1,8 +1,8 @@
 import os
 from dotenv import load_dotenv
 from livekit import agents
-from livekit.agents import AgentServer, AgentSession, Agent, room_io
-from livekit.plugins import openai, ai_coustics
+from livekit.agents import AgentServer, AgentSession, Agent
+from livekit.plugins import openai
 
 load_dotenv()
 

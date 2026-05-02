@@ -21,20 +21,33 @@ server = AgentServer()
 
 @server.rtc_session(agent_name=AGENT_NAME)
 async def voice_agent(ctx: agents.JobContext):
-    session = AgentSession(
-        llm=openai.realtime.RealtimeModel(
-            voice=VOICE,
+    print(f"[VOICE_AGENT] Session started for room: {ctx.room.name}")
+    print(f"[VOICE_AGENT] Job ID: {ctx.job.id}")
+    
+    try:
+        session = AgentSession(
+            llm=openai.realtime.RealtimeModel(
+                voice=VOICE,
+            )
         )
-    )
 
-    await session.start(
-        room=ctx.room,
-        agent=Assistant(),
-    )
+        print(f"[VOICE_AGENT] Starting session...")
+        await session.start(
+            room=ctx.room,
+            agent=Assistant(),
+        )
+        print(f"[VOICE_AGENT] Session started successfully")
 
-    await session.generate_reply(
-        instructions="Greet the user and offer your assistance."
-    )
+        print(f"[VOICE_AGENT] Generating greeting...")
+        await session.generate_reply(
+            instructions="Greet the user and offer your assistance."
+        )
+        print(f"[VOICE_AGENT] Greeting sent")
+        
+    except Exception as e:
+        print(f"[VOICE_AGENT] ERROR: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 if __name__ == "__main__":

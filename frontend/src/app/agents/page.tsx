@@ -220,59 +220,11 @@ export default function AgentsPage() {
 
       {/* Create Agent Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-100 flex items-center justify-center p-4">
-          <div className="glass rounded-2xl p-8 w-full max-w-lg border border-white/10">
-            <h2 className="text-xl font-bold text-white mb-6">Create New Agent</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs text-white/60 mb-2">Name</label>
-                <input name="name" required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow" />
-              </div>
-              <div>
-                <label className="block text-xs text-white/60 mb-2">Phone Number (E.164 format, e.g., +50712345678)</label>
-                <input name="phone_number" placeholder="+50712345678" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow" />
-              </div>
-              <div>
-                <label className="block text-xs text-white/60 mb-2">Description</label>
-                <input name="description" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow" />
-              </div>
-              <div>
-                <label className="block text-xs text-white/60 mb-2">System Prompt</label>
-                <textarea name="system_prompt" required rows={4} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs text-white/60 mb-2">Voice</label>
-                  <select name="voice" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-cyan-glow">
-                    <option value="alloy">Alloy</option>
-                    <option value="echo">Echo</option>
-                    <option value="fable">Fable</option>
-                    <option value="onyx">Onyx</option>
-                    <option value="nova">Nova</option>
-                    <option value="shimmer">Shimmer</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs text-white/60 mb-2">LLM Model</label>
-                  <select name="llm_model" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-cyan-glow">
-                    <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                    <option value="claude-3-opus">Claude 3 Opus</option>
-                    <option value="claude-3-sonnet">Claude 3 Sonnet</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex gap-4 pt-4">
-                <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-3 rounded-xl bg-white/5 text-white font-bold hover:bg-white/10 transition-all">
-                  Cancel
-                </button>
-                <button type="submit" className="flex-1 py-3 rounded-xl bg-cyan-glow text-on-primary font-bold hover:opacity-90 transition-all">
-                  Create Agent
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <AgentForm
+          onSubmit={(data) => createMutation.mutate(data)}
+          onCancel={() => setShowForm(false)}
+          isEditing={false}
+        />
       )}
 
       {/* View Agent Modal */}
@@ -327,64 +279,12 @@ export default function AgentsPage() {
 
       {/* Edit Agent Modal */}
       {editingAgent && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-100 flex items-center justify-center p-4">
-          <div className="glass rounded-2xl p-8 w-full max-w-lg border border-white/10">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-white">Edit Agent</h2>
-              <button onClick={() => setEditingAgent(null)} className="p-2 text-white/40 hover:text-white">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs text-white/60 mb-2">Name</label>
-                <input name="name" defaultValue={editingAgent.name} required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow" />
-              </div>
-              <div>
-                <label className="block text-xs text-white/60 mb-2">Phone Number (E.164 format)</label>
-                <input name="phone_number" defaultValue={editingAgent.phone_number || ''} placeholder="+50712345678" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow" />
-              </div>
-              <div>
-                <label className="block text-xs text-white/60 mb-2">Description</label>
-                <input name="description" defaultValue={editingAgent.description || ''} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow" />
-              </div>
-              <div>
-                <label className="block text-xs text-white/60 mb-2">System Prompt</label>
-                <textarea name="system_prompt" defaultValue={editingAgent.system_prompt} required rows={4} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs text-white/60 mb-2">Voice</label>
-                  <select name="voice" defaultValue={editingAgent.voice} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-cyan-glow">
-                    <option value="alloy">Alloy</option>
-                    <option value="echo">Echo</option>
-                    <option value="fable">Fable</option>
-                    <option value="onyx">Onyx</option>
-                    <option value="nova">Nova</option>
-                    <option value="shimmer">Shimmer</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs text-white/60 mb-2">LLM Model</label>
-                  <select name="llm_model" defaultValue={editingAgent.llm_model} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-cyan-glow">
-                    <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                    <option value="claude-3-opus">Claude 3 Opus</option>
-                    <option value="claude-3-sonnet">Claude 3 Sonnet</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex gap-4 pt-4">
-                <button type="button" onClick={() => setEditingAgent(null)} className="flex-1 py-3 rounded-xl bg-white/5 text-white font-bold hover:bg-white/10 transition-all">
-                  Cancel
-                </button>
-                <button type="submit" className="flex-1 py-3 rounded-xl bg-yellow-500 text-black font-bold hover:opacity-90 transition-all">
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <AgentForm
+          agent={editingAgent}
+          onSubmit={(data) => updateMutation.mutate({ id: editingAgent.id, data })}
+          onCancel={() => setEditingAgent(null)}
+          isEditing={true}
+        />
       )}
     </div>
   );

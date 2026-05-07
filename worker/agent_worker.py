@@ -32,6 +32,9 @@ if DB_AVAILABLE and DATABASE_URL:
     if DATABASE_URL.startswith("postgresql://"):
         DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
     
+    # Remove sslmode=require from URL (asyncpg handles SSL differently)
+    DATABASE_URL = DATABASE_URL.split("?")[0]
+    
     print(f"[WORKER] Database configured: {DATABASE_URL[:50]}...", flush=True)
     
     engine = create_async_engine(DATABASE_URL, echo=False)

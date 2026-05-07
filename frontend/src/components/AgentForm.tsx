@@ -40,6 +40,20 @@ export default function AgentForm({ agent, onSubmit, onCancel, isEditing }: Agen
 
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['llm', 'voice']));
   const [newTool, setNewTool] = useState({ name: '', description: '' });
+  const [voiceType, setVoiceType] = useState<'openai' | 'elevenlabs'>(
+    agent?.voice && !['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'].includes(agent.voice) 
+      ? 'elevenlabs' 
+      : 'openai'
+  );
+  
+  const handleVoiceTypeChange = (type: 'openai' | 'elevenlabs') => {
+    setVoiceType(type);
+    if (type === 'openai') {
+      updateField('voice', 'alloy');
+    } else {
+      updateField('voice', '');
+    }
+  };
 
   const toggleSection = (section: string) => {
     const newExpanded = new Set(expandedSections);
@@ -206,17 +220,61 @@ export default function AgentForm({ agent, onSubmit, onCancel, isEditing }: Agen
             {expandedSections.has('voice') && (
               <div className="p-3 space-y-3">
                 <div>
-                  <label className="block text-xs text-white/60 mb-1">Voice</label>
-                  <select
-                    value={formData.voice}
-                    onChange={e => updateField('voice', e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
-                  >
-                    {VOICE_OPTIONS.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
+                  <label className="block text-xs text-white/60 mb-2">Voice Provider</label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleVoiceTypeChange('openai')}
+                      className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                        voiceType === 'openai' 
+                          ? 'bg-cyan-glow text-black' 
+                          : 'bg-white/5 text-white/60 hover:bg-white/10'
+                      }`}
+                    >
+                      OpenAI
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleVoiceTypeChange('elevenlabs')}
+                      className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                        voiceType === 'elevenlabs' 
+                          ? 'bg-cyan-glow text-black' 
+                          : 'bg-white/5 text-white/60 hover:bg-white/10'
+                      }`}
+                    >
+                      ElevenLabs
+                    </button>
+                  </div>
                 </div>
+                
+                {voiceType === 'openai' ? (
+                  <div>
+                    <label className="block text-xs text-white/60 mb-1">Voice</label>
+                    <select
+                      value={formData.voice}
+                      onChange={e => updateField('voice', e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
+                    >
+                      {VOICE_OPTIONS.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs text-white/60 mb-1">ElevenLabs Voice ID</label>
+                    <input
+                      type="text"
+                      value={formData.voice || ''}
+                      onChange={e => updateField('voice', e.target.value)}
+                      placeholder="e.g., a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm font-mono"
+                    />
+                    <p className="text-[10px] text-white/40 mt-1">
+                      Get your voice ID from ElevenLabs dashboard
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>

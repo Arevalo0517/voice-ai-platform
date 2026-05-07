@@ -19,15 +19,31 @@ async def create_agent(
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new agent"""
+    # Handle None values for optional fields
     agent = Agent(
         name=agent_data.name,
         description=agent_data.description,
         system_prompt=agent_data.system_prompt,
-        voice=agent_data.voice,
-        llm_model=agent_data.llm_model,
+        voice=agent_data.voice or "alloy",
+        llm_provider=agent_data.llm_provider or "openai",
+        llm_model=agent_data.llm_model or "gpt-4-turbo",
+        temperature=agent_data.temperature or 0.8,
+        max_output_tokens=agent_data.max_output_tokens,
+        turn_detection=agent_data.turn_detection or "semantic",
+        interrupt_min_words=agent_data.interrupt_min_words or 0,
+        min_endpointing_delay=agent_data.min_endpointing_delay or "0.3s",
+        max_endpointing_delay=agent_data.max_endpointing_delay or "3s",
+        vad_enabled=agent_data.vad_enabled if agent_data.vad_enabled is not None else True,
+        vad_model=agent_data.vad_model or "silero",
+        idle_timeout=agent_data.idle_timeout or "5m",
+        max_duration=agent_data.max_duration or "30m",
+        waiting_for_user_timeout=agent_data.waiting_for_user_timeout or "30s",
+        audio_sample_rate=agent_data.audio_sample_rate or 16000,
+        audio_channels=agent_data.audio_channels or 1,
         phone_number=agent_data.phone_number,
-        tools=agent_data.tools,
-        is_active=agent_data.is_active
+        tools=agent_data.tools or [],
+        webhooks=agent_data.webhooks or [],
+        is_active=agent_data.is_active if agent_data.is_active is not None else True
     )
     db.add(agent)
     await db.commit()

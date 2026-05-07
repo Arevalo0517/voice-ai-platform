@@ -2,8 +2,9 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { agentsApi, type Agent } from '@/lib/api';
-import { Phone, Users, Settings, Plus, Pencil, Trash2, Search, X, Eye } from 'lucide-react';
+import { Phone, Users, Settings, Plus, Pencil, Trash2, Search, Eye, X } from 'lucide-react';
 import { useState } from 'react';
+import AgentForm from '@/components/AgentForm';
 
 export default function AgentsPage() {
   const queryClient = useQueryClient();

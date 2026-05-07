@@ -17,6 +17,7 @@ class AgentBase(BaseModel):
     
     # Voice Configuration
     voice: str = "alloy"  # OpenAI voices: alloy, echo, fable, onyx, nova, shimmer
+    greeting: Optional[str] = None  # Initial greeting message
     
     # Turn Detection
     turn_detection: str = "semantic"  # semantic, timed, disabled

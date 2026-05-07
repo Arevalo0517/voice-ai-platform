@@ -15,6 +15,7 @@ class Agent(Base):
     # Agent configuration
     system_prompt = Column(Text, nullable=False)
     voice = Column(String(50), default="alloy")
+    greeting = Column(Text, nullable=True)  # Initial greeting message
     llm_provider = Column(String(50), default="openai")  # openai, anthropic, google
     llm_model = Column(String(100), default="gpt-4-turbo")
     

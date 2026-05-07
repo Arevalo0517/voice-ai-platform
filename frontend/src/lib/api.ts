@@ -26,6 +26,7 @@ export interface Agent {
   
   // Voice
   voice: string;
+  greeting?: string;  // Initial greeting message
   
   // Turn Detection
   turn_detection: string;

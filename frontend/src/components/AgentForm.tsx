@@ -16,6 +16,7 @@ export default function AgentForm({ agent, onSubmit, onCancel, isEditing }: Agen
     name: agent?.name || '',
     description: agent?.description || '',
     system_prompt: agent?.system_prompt || '',
+    greeting: agent?.greeting || '',
     llm_provider: agent?.llm_provider || 'openai',
     llm_model: agent?.llm_model || 'gpt-4-turbo',
     temperature: agent?.temperature ?? 0.8,
@@ -219,6 +220,16 @@ export default function AgentForm({ agent, onSubmit, onCancel, isEditing }: Agen
             </button>
             {expandedSections.has('voice') && (
               <div className="p-3 space-y-3">
+                <div>
+                  <label className="block text-xs text-white/60 mb-1">Greeting Message</label>
+                  <textarea
+                    value={formData.greeting || ''}
+                    onChange={e => updateField('greeting', e.target.value)}
+                    placeholder="Hello! How can I help you today?"
+                    rows={2}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
+                  />
+                </div>
                 <div>
                   <label className="block text-xs text-white/60 mb-2">Voice Provider</label>
                   <div className="flex gap-2">

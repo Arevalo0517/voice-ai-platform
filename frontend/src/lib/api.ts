@@ -17,14 +17,70 @@ export interface Agent {
   name: string;
   description?: string;
   system_prompt: string;
-  voice: string;
+  
+  // LLM Configuration
+  llm_provider: string;
   llm_model: string;
-  phone_number?: string;
+  temperature: number;
+  max_output_tokens?: number;
+  
+  // Voice
+  voice: string;
+  
+  // Turn Detection
+  turn_detection: string;
+  interrupt_min_words: number;
+  min_endpointing_delay: string;
+  max_endpointing_delay: string;
+  
+  // VAD
+  vad_enabled: boolean;
+  vad_model: string;
+  
+  // Timeouts
+  idle_timeout: string;
+  max_duration: string;
+  waiting_for_user_timeout: string;
+  
+  // Audio
+  audio_sample_rate: number;
+  audio_channels: number;
+  
+  // Capabilities
   tools: any[];
+  webhooks: any[];
+  
+  // Status
+  phone_number?: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
 }
+
+// LLM Providers
+export const LLM_PROVIDERS = {
+  openai: {
+    models: ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-4", "gpt-3.5-turbo"],
+    voices: ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
+  },
+  anthropic: {
+    models: ["claude-sonnet-4-20250514", "claude-opus-4-20250514", "claude-3-5-sonnet-latest", "claude-3-opus-latest", "claude-3-haiku-latest"],
+    voices: ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
+  },
+  google: {
+    models: ["gemini-2.5-pro-preview-06-05", "gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash"],
+    voices: ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
+  }
+};
+
+export const VOICE_OPTIONS = [
+  { value: "alloy", label: "Alloy - Neutral, balanced" },
+  { value: "echo", label: "Echo - Male, warm" },
+  { value: "fable", label: "Fable - British accent" },
+  { value: "onyx", label: "Onyx - Deep male voice" },
+  { value: "nova", label: "Nova - Female, upbeat" },
+  { value: "shimmer", label: "Shimmer - Female, smooth" }
+];
 
 export interface Call {
   id: string;

@@ -63,19 +63,24 @@ async def get_agent_config(agent_name: str) -> dict:
     
     try:
         async with async_session_maker() as session:
-            result = await session.execute(
-                f"SELECT system_prompt, voice, llm_model FROM agents WHERE name = '{agent_name}' AND is_active = true"
-            )
+            from sqlalchemy import text
+            query = text(f"SELECT system_prompt, voice, llm_model FROM agents WHERE name = :name AND is_active = true")
+            result = await session.execute(query, {"name": agent_name})
             row = result.fetchone()
             
             if row:
+                print(f"[WORKER] Found agent '{agent_name}' in DB!", flush=True)
                 return {
                     "system_prompt": row[0] or DEFAULT_PROMPT,
                     "voice": row[1] or VOICE,
                     "llm_model": row[2] or "gpt-4-turbo"
                 }
             else:
-                print(f"[WORKER] Agent '{agent_name}' not found, using default", flush=True)
+                print(f"[WORKER] Agent '{agent_name}' NOT FOUND in DB, using default", flush=True)
+                print(f"[WORKER] Available agents in DB:", flush=True)
+                result2 = await session.execute(text("SELECT name FROM agents"))
+                for r in result2:
+                    print(f"  - {r[0]}", flush=True)
                 return {
                     "system_prompt": DEFAULT_PROMPT,
                     "voice": VOICE,

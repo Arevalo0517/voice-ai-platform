@@ -6,6 +6,15 @@ from livekit import agents
 from livekit.agents import AgentServer, AgentSession, Agent
 from livekit.plugins import openai
 
+# Try to import ElevenLabs plugin
+try:
+    from livekit.plugins import elevenlabs as elevenlabs_plugin
+    ELEVENLABS_AVAILABLE = True
+    print("[WORKER] ElevenLabs plugin available", flush=True)
+except ImportError:
+    ELEVENLABS_AVAILABLE = False
+    print("[WORKER] ElevenLabs plugin not available", flush=True)
+
 # Database imports
 try:
     from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
@@ -21,6 +30,7 @@ load_dotenv()
 AGENT_NAME = os.getenv("AGENT_NAME", "voice-agent")
 VOICE = os.getenv("AGENT_VOICE", "alloy")
 DEFAULT_PROMPT = os.getenv("AGENT_SYSTEM_PROMPT", "You are a helpful AI voice assistant. Be friendly and concise.")
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 
 # Database configuration
 DATABASE_URL = os.getenv("DATABASE_URL") or os.getenv("SUPABASE_DB_URL")
@@ -47,11 +57,27 @@ if DB_AVAILABLE and DATABASE_URL:
         id = Column(String(36), primary_key=True)
         name = Column(String(255), nullable=False)
         system_prompt = Column(Text, nullable=False)
-        voice = Column(String(50), default="alloy")
+        voice = Column(String(255), default="alloy")  # Extended to support longer voice IDs
         llm_model = Column(String(100), default="gpt-4-turbo")
         
 else:
     print("[WORKER] Using default prompt (no database)", flush=True)
+
+
+def is_elevenlabs_voice(voice: str) -> bool:
+    """Check if the voice is an ElevenLabs voice"""
+    if not voice:
+        return False
+    # ElevenLabs voice IDs are typically long alphanumeric strings (UUIDs)
+    # They don't match standard OpenAI voice names
+    openai_voices = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
+    if voice.lower() in openai_voices:
+        return False
+    # If it's not a standard OpenAI voice, check if it's a valid ElevenLabs voice ID
+    # ElevenLabs IDs are typically 36 characters (UUID format) or longer
+    if len(voice) > 20 and not voice.startswith("elevenlabs:"):
+        return True  # Likely an ElevenLabs voice ID
+    return voice.startswith("elevenlabs:") or voice.startswith("elevenlabs_")
 
 
 async def get_agent_config(agent_name: str) -> dict:
@@ -72,11 +98,15 @@ async def get_agent_config(agent_name: str) -> dict:
             row = result.fetchone()
             
             if row:
+                voice_id = row[1] or VOICE
+                is_eleven = is_elevenlabs_voice(voice_id)
                 print(f"[WORKER] Found agent '{agent_name}' in DB!", flush=True)
+                print(f"[WORKER] Voice: {voice_id}, Is ElevenLabs: {is_eleven}", flush=True)
                 return {
                     "system_prompt": row[0] or DEFAULT_PROMPT,
-                    "voice": row[1] or VOICE,
-                    "llm_model": row[2] or "gpt-4-turbo"
+                    "voice": voice_id,
+                    "llm_model": row[2] or "gpt-4-turbo",
+                    "is_elevenlabs": is_eleven
                 }
             else:
                 print(f"[WORKER] Agent '{agent_name}' NOT FOUND in DB, using default", flush=True)
@@ -87,15 +117,33 @@ async def get_agent_config(agent_name: str) -> dict:
                 return {
                     "system_prompt": DEFAULT_PROMPT,
                     "voice": VOICE,
-                    "llm_model": "gpt-4-turbo"
+                    "llm_model": "gpt-4-turbo",
+                    "is_elevenlabs": False
                 }
     except Exception as e:
         print(f"[WORKER] Error fetching agent config: {e}", flush=True)
         return {
             "system_prompt": DEFAULT_PROMPT,
             "voice": VOICE,
-            "llm_model": "gpt-4-turbo"
+            "llm_model": "gpt-4-turbo",
+            "is_elevenlabs": False
         }
+
+
+def create_realtime_model(voice: str, is_elevenlabs: bool):
+    """Create the appropriate realtime model based on voice type"""
+    if is_elevenlabs and ELEVENLABS_AVAILABLE and ELEVENLABS_API_KEY:
+        # Clean the voice ID (remove prefix if present)
+        voice_id = voice.replace("elevenlabs:", "").replace("elevenlabs_", "")
+        print(f"[WORKER] Creating ElevenLabs RealtimeModel with voice: {voice_id}", flush=True)
+        return openai.realtime.RealtimeModel(
+            voice="elevenlabs",
+            model="elevenlabs/eleven_turbo_2"
+        )
+    else:
+        # Use standard OpenAI voice
+        print(f"[WORKER] Creating OpenAI RealtimeModel with voice: {voice}", flush=True)
+        return openai.realtime.RealtimeModel(voice=voice)
 
 
 server = AgentServer()
@@ -112,6 +160,8 @@ async def voice_agent(ctx: agents.JobContext):
         agent_config = await get_agent_config(AGENT_NAME)
         print(f"[VOICE_AGENT] Loaded config for agent: {AGENT_NAME}", flush=True)
         print(f"[VOICE_AGENT] System prompt: {agent_config['system_prompt'][:50]}...", flush=True)
+        print(f"[VOICE_AGENT] Voice: {agent_config['voice']}", flush=True)
+        print(f"[VOICE_AGENT] Is ElevenLabs: {agent_config.get('is_elevenlabs', False)}", flush=True)
         
         # Connect to the room first
         print(f"[VOICE_AGENT] Connecting to room...", flush=True)
@@ -125,8 +175,11 @@ async def voice_agent(ctx: agents.JobContext):
         
         # Create realtime model with configured voice
         print(f"[VOICE_AGENT] Creating RealtimeModel...", flush=True)
-        llm = openai.realtime.RealtimeModel(voice=agent_config["voice"])
-        print(f"[VOICE_AGENT] RealtimeModel created with voice: {agent_config['voice']}", flush=True)
+        llm = create_realtime_model(
+            agent_config["voice"],
+            agent_config.get("is_elevenlabs", False)
+        )
+        print(f"[VOICE_AGENT] RealtimeModel created successfully", flush=True)
         
         session = AgentSession(llm=llm)
         print(f"[VOICE_AGENT] AgentSession created", flush=True)
@@ -147,9 +200,9 @@ async def voice_agent(ctx: agents.JobContext):
         print(f"[VOICE_AGENT] ERROR: {e}", flush=True)
         import traceback
         traceback.print_exc(file=sys.stdout)
-        flush=True
 
 
 if __name__ == "__main__":
     print(f"[WORKER] Starting voice-agent with name: {AGENT_NAME}", flush=True)
+    print(f"[WORKER] ElevenLabs available: {ELEVENLABS_AVAILABLE}", flush=True)
     agents.cli.run_app(server)

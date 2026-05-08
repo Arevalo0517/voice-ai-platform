@@ -22,6 +22,8 @@ export default function AgentForm({ agent, onSubmit, onCancel, isEditing }: Agen
     temperature: agent?.temperature ?? 0.8,
     max_output_tokens: agent?.max_output_tokens || undefined,
     voice: agent?.voice || 'alloy',
+    tts_provider: agent?.tts_provider || 'openai',
+    tts_voice: agent?.tts_voice || agent?.voice || 'alloy',
     turn_detection: agent?.turn_detection || 'semantic',
     interrupt_min_words: agent?.interrupt_min_words ?? 0,
     min_endpointing_delay: agent?.min_endpointing_delay || '0.3s',
@@ -51,8 +53,12 @@ export default function AgentForm({ agent, onSubmit, onCancel, isEditing }: Agen
     setVoiceType(type);
     if (type === 'openai') {
       updateField('voice', 'alloy');
+      updateField('tts_provider', 'openai');
+      updateField('tts_voice', 'alloy');
     } else {
       updateField('voice', '');
+      updateField('tts_provider', 'elevenlabs');
+      updateField('tts_voice', '');
     }
   };
 

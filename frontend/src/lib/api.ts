@@ -28,6 +28,14 @@ export interface Agent {
   voice: string;
   greeting?: string;  // Initial greeting message
   
+  // LLM Type
+  llm_type?: string;  // realtime or standard
+  
+  // TTS/STT
+  tts_provider?: string;  // openai, elevenlabs, deepgram, cartesia
+  tts_voice?: string;
+  stt_provider?: string;  // openai, deepgram
+  
   // Turn Detection
   turn_detection: string;
   interrupt_min_words: number;

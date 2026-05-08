@@ -1,4 +1,3 @@
-'use client';
 
 import { useState, useEffect } from 'react';
 import { LLM_PROVIDERS, VOICE_OPTIONS, type Agent } from '@/lib/api';

@@ -76,7 +76,7 @@ def is_elevenlabs_voice(voice: str) -> bool:
         return False
     # If it's not a standard OpenAI voice, check if it's a valid ElevenLabs voice ID
     # ElevenLabs IDs are typically 36 characters (UUID format) or longer
-    if len(voice) > 20 and not voice.startswith("elevenlabs:"):
+    if len(voice) >= 20 and not voice.startswith("elevenlabs:"):
         return True  # Likely an ElevenLabs voice ID
     return voice.startswith("elevenlabs:") or voice.startswith("elevenlabs_")
 

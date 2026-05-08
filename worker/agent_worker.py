@@ -58,6 +58,7 @@ if DB_AVAILABLE and DATABASE_URL:
         name = Column(String(255), nullable=False)
         system_prompt = Column(Text, nullable=False)
         voice = Column(String(255), default="alloy")  # Extended to support longer voice IDs
+        llm_provider = Column(String(50), default="openai")  # openai, anthropic, google, elevenlabs
         llm_model = Column(String(100), default="gpt-4-turbo")
         
 else:
@@ -80,6 +81,13 @@ def is_elevenlabs_voice(voice: str) -> bool:
     return voice.startswith("elevenlabs:") or voice.startswith("elevenlabs_")
 
 
+def is_elevenlabs_provider(llm_provider: str) -> bool:
+    """Check if the LLM provider indicates ElevenLabs voice"""
+    if not llm_provider:
+        return False
+    return llm_provider.lower() in ["elevenlabs", "11labs"]
+
+
 async def get_agent_config(agent_name: str) -> dict:
     """Get agent configuration from database"""
     if not DB_AVAILABLE or not DATABASE_URL:
@@ -93,19 +101,22 @@ async def get_agent_config(agent_name: str) -> dict:
     try:
         async with async_session_maker() as session:
             from sqlalchemy import text
-            query = text(f"SELECT system_prompt, voice, llm_model FROM agents WHERE name = :name AND is_active = true")
+            query = text(f"SELECT system_prompt, voice, llm_provider, llm_model FROM agents WHERE name = :name AND is_active = true")
             result = await session.execute(query, {"name": agent_name})
             row = result.fetchone()
             
             if row:
                 voice_id = row[1] or VOICE
-                is_eleven = is_elevenlabs_voice(voice_id)
+                llm_provider = row[2]
+                # Check both provider type and voice ID for ElevenLabs
+                is_eleven = is_elevenlabs_provider(llm_provider) or is_elevenlabs_voice(voice_id)
                 print(f"[WORKER] Found agent '{agent_name}' in DB!", flush=True)
-                print(f"[WORKER] Voice: {voice_id}, Is ElevenLabs: {is_eleven}", flush=True)
+                print(f"[WORKER] Voice: {voice_id}, Provider: {llm_provider}, Is ElevenLabs: {is_eleven}", flush=True)
                 return {
                     "system_prompt": row[0] or DEFAULT_PROMPT,
                     "voice": voice_id,
-                    "llm_model": row[2] or "gpt-4-turbo",
+                    "llm_provider": llm_provider,
+                    "llm_model": row[3] or "gpt-4-turbo",
                     "is_elevenlabs": is_eleven
                 }
             else:
